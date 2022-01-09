@@ -27,12 +27,12 @@ class RawFileStorage {
 
   create(origin_url, params) {
     // Generate a shorten URL.
-    // TODO: Use config for byte length.
-    let short_url = RawFileStorage.generateShortUrl(8);
+    let short_url_size = params.short_url_size || 8;
+    let short_url = params.short_url || RawFileStorage.generateShortUrl(short_url_size);
 
     // Skip duplicated URL.
     while (short_url in this.store) {
-      short_url = RawFileStorage.generateShortUrl(8);
+      short_url = RawFileStorage.generateShortUrl(++short_url_size);
     }
 
     // Store it in memory.
