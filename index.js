@@ -41,18 +41,21 @@ async function CreateShortURL(ctx) {
   }
   let short_url_size = config.get("short_url.random_size");
 
-  short_url = await storage.create(origin_url.toString(), {
+  let result = await storage.create(origin_url.toString(), {
     short_url,
     short_url_size,
   });
-  ctx.body = ctx.origin + "/" + short_url;
+  ctx.body = {
+    ...result,
+    short_url: ctx.origin + "/" + result.short_url,
+  };
 }
 
 async function GetShortURL(ctx) {
   let origin_url = await storage.get(ctx.short_url);
   if (origin_url) {
     ctx.redirect(origin_url);
-    ctx.body = origin_url;
+    ctx.body = { origin_url };
   } else {
     ctx.status = 204;
   }
