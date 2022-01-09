@@ -8,6 +8,12 @@ const config = require("config");
 const Storage = require("./storage/" + config.get("storage.module"));
 const storage = new Storage(config.get("storage.options"));
 
+// For modules that need async initialization.
+(async () => {
+  // Initialize storage.
+  await storage.init();
+})();
+
 const app = new Koa();
 app.use(
   KoaBody({
