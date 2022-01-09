@@ -45,9 +45,15 @@ class RawFileStorage {
     return this.store[short_url]; // return original URL.
   }
 
+  modify(short_url, origin_url) {
+    this.store[short_url] = origin_url;
+    return true;
+  }
+
   delete(short_url) {
     return delete this.store[short_url]; // return true if success.
   }
+
 }
 
 module.exports = RawFileStorage;
