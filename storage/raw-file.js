@@ -5,6 +5,7 @@
 // ALL data is stored in memory.
 
 "use strict";
+const crypto = require("crypto");
 
 class RawFileStorage {
   constructor(filePath) {
@@ -13,29 +14,27 @@ class RawFileStorage {
   }
 
   static generateShortUrl(byte_length) {
-    require("crypto").randomBytes(byte_length, (err, buf) => {
-      if (err) {
-        throw err;
-      }
-      return buf
+    let buf = crypto.randomBytes(byte_length);
+    return (
+      buf
         .toString("base64")
         // for URL safe.
         .replace(/=/g, "")
         .replace(/\+/g, "-")
-        .replace(/\//g, "_");
-    });
+        .replace(/\//g, "_")
+    );
   }
 
   create(origin_url, params) {
     // Generate a shorten URL.
     // TODO: Use config for byte length.
-    let short_url = generateShortUrl(8);
+    let short_url = RawFileStorage.generateShortUrl(8);
 
     // Skip duplicated URL.
     while (short_url in this.store) {
-      short_url = generateShortUrl(8);
+      short_url = RawFileStorage.generateShortUrl(8);
     }
-    
+
     // Store it in memory.
     this.store[short_url] = origin_url;
     return short_url; // return shorten URL, without prefix.
