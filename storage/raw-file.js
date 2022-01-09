@@ -9,11 +9,33 @@
 class RawFileStorage {
   constructor(filePath) {
     this.store = {};
+    // TODO: Read file and store data.
+  }
+
+  static generateShortUrl(byte_length) {
+    require("crypto").randomBytes(byte_length, (err, buf) => {
+      if (err) {
+        throw err;
+      }
+      return buf
+        .toString("base64")
+        // for URL safe.
+        .replace(/=/g, "")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_");
+    });
   }
 
   create(origin_url, params) {
     // Generate a shorten URL.
-    let short_url = "aabbcc";
+    // TODO: Use config for byte length.
+    let short_url = generateShortUrl(8);
+
+    // Skip duplicated URL.
+    while (short_url in this.store) {
+      short_url = generateShortUrl(8);
+    }
+    
     // Store it in memory.
     this.store[short_url] = origin_url;
     return short_url; // return shorten URL, without prefix.
@@ -24,7 +46,7 @@ class RawFileStorage {
   }
 
   delete(short_url) {
-    return (delete this.store[short_url]); // return true if success.
+    return delete this.store[short_url]; // return true if success.
   }
 }
 
