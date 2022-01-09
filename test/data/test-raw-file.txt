@@ -1,0 +1,3 @@
+aabbcc
+https://test.org/abcdef?a=1&b=2&c=3#test-hash-tag
+should-not-be-matched
