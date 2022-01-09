@@ -18,25 +18,18 @@ app.use(
   })
 );
 
-function CreateShortURL(ctx) {
-  try {
-    // URL param can from form data or http header.
-    let origin_url = ctx.request.body.url || ctx.header.url;
-    // Check URL.
-    origin_url = new URL(origin_url);
+async function CreateShortURL(ctx) {
+  // URL param can from form data or http header.
+  let origin_url = ctx.request.body.url || ctx.header.url;
+  // Check URL.
+  origin_url = new URL(origin_url);
 
-    let short_url = storage.create(origin_url.toString());
-    ctx.body = ctx.origin + "/" + short_url;
-  } catch (e) {
-    // TODO: handle error.
-    console.error(e);
-    // silently ignore.
-    ctx.status = 204;
-  }
+  let short_url = await storage.create(origin_url.toString());
+  ctx.body = ctx.origin + "/" + short_url;
 }
 
-function GetShortURL(ctx) {
-  let origin_url = storage.get(ctx.url.slice(1));
+async function GetShortURL(ctx) {
+  let origin_url = await storage.get(ctx.url.slice(1));
   if (origin_url) {
     ctx.redirect(origin_url);
     ctx.body = origin_url;
@@ -45,12 +38,20 @@ function GetShortURL(ctx) {
   }
 }
 
-function ModifyShortURL(ctx) {
-  ctx.body = "Modify url";
+async function ModifyShortURL(ctx) {
+  let origin_url = ctx.request.body.url || ctx.header.url;
+  let short_url = ctx.request.body.short_url || ctx.header.short_url;
+
+  // Check URL.
+  origin_url = new URL(origin_url);
+  let result = await storage.modify(short_url, origin_url.toString());
+
+  ctx.body = "Modified";
 }
 
-function DeleteShortURL(ctx) {
-  ctx.body = "Deleted url";
+async function DeleteShortURL(ctx) {
+  let result = await storage.delete(ctx.url.slice(1));
+  ctx.body = "Deleted";
 }
 
 const method = {
@@ -62,9 +63,16 @@ const method = {
 };
 
 app.use(async (ctx) => {
-  if (ctx.method in method) {
-    method[ctx.method](ctx);
-  } else {
+  if (ctx.method in method)
+    try {
+      await method[ctx.method](ctx);
+    } catch (e) {
+      // TODO: handle error.
+      console.error(e);
+      // silently ignore.
+      ctx.status = 204;
+    }
+  else {
     ctx.status = 204;
   }
 });
