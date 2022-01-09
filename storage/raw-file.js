@@ -27,6 +27,7 @@ class RawFileStorage {
 
   create(origin_url, params) {
     // Generate a shorten URL.
+    params = params || {};
     let short_url_size = params.short_url_size || 8;
     let short_url = params.short_url || RawFileStorage.generateShortUrl(short_url_size);
 
