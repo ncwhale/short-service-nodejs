@@ -1,5 +1,6 @@
 const Koa = require("koa");
 const KoaBody = require("koa-body");
+const URL = require("url").URL;
 
 // TODO: use config file.
 const Storage = require("./storage/raw-file");
@@ -36,7 +37,10 @@ app.use(async (ctx) => {
       {
         // Use POST/PUT to create a shorten URL.
         let origin_url = ctx.request.body.url || ctx.header.url;
-        let short_url = storage.create(origin_url);
+        // Check URL.
+        origin_url = new URL(origin_url);
+
+        let short_url = storage.create(origin_url.toString());
         ctx.body = ctx.origin + "/" + short_url;
       }
       break;
