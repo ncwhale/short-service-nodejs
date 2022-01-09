@@ -56,7 +56,7 @@ class RawFileStorage {
 
     // Store it in memory.
     this.store[short_url] = origin_url;
-    return short_url; // return shorten URL, without prefix.
+    return { short_url, origin_url, created_at: new Date().toISOString() }; // return shorten URL, without prefix.
   }
 
   get(short_url) {
