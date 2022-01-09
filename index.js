@@ -18,9 +18,6 @@ app.use(
 );
 
 app.use(async (ctx) => {
-  console.log(ctx.method);
-  console.log(ctx.url);
-
   // TODO: use route or object.
   switch (ctx.method) {
     case "GET":
