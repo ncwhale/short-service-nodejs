@@ -5,8 +5,8 @@
 // ALL data is stored in memory.
 
 "use strict";
-const fs = require('fs');
-const readline = require('readline');
+const fs = require("fs");
+const readline = require("readline");
 const randomBytes = require("crypto").randomBytes;
 
 class RawFileStorage {
@@ -14,17 +14,17 @@ class RawFileStorage {
     options = options || {};
     this.store = options.raw_data || {};
 
-    if(options.filePath) {
-      const fileStream = fs.createReadStream(options.filePath)
+    if (options.filePath) {
+      const fileStream = fs.createReadStream(options.filePath);
       const rl = readline.createInterface({
         input: fileStream,
-        crlfDelay: Infinity
+        crlfDelay: Infinity,
       });
 
       let is_reading_short_url = true;
       let short_url = "";
-      rl.on('line', (line) => {
-        if(is_reading_short_url) {
+      rl.on("line", (line) => {
+        if (is_reading_short_url) {
           short_url = line;
           is_reading_short_url = false;
         } else {
@@ -37,21 +37,17 @@ class RawFileStorage {
 
   static generateShortUrl(byte_length) {
     let buf = randomBytes(byte_length);
-    return (
-      buf
-        .toString("base64")
-        // for URL safe.
-        .replace(/=/g, "")
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-    );
+    return buf.toString("base64url");
   }
+
+  init() {}
 
   create(origin_url, params) {
     // Generate a shorten URL.
     params = params || {};
     let short_url_size = params.short_url_size || 8;
-    let short_url = params.short_url || RawFileStorage.generateShortUrl(short_url_size);
+    let short_url =
+      params.short_url || RawFileStorage.generateShortUrl(short_url_size);
 
     // Skip duplicated URL.
     while (short_url in this.store) {
@@ -75,7 +71,6 @@ class RawFileStorage {
   delete(short_url) {
     return delete this.store[short_url]; // return true if success.
   }
-
 }
 
 module.exports = RawFileStorage;
