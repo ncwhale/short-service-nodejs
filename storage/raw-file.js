@@ -5,7 +5,7 @@
 // ALL data is stored in memory.
 
 "use strict";
-const crypto = require("crypto");
+const randomBytes = require("crypto").randomBytes;
 
 class RawFileStorage {
   constructor(filePath) {
@@ -14,7 +14,7 @@ class RawFileStorage {
   }
 
   static generateShortUrl(byte_length) {
-    let buf = crypto.randomBytes(byte_length);
+    let buf = randomBytes(byte_length);
     return (
       buf
         .toString("base64")
