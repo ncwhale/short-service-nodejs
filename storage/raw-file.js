@@ -5,12 +5,34 @@
 // ALL data is stored in memory.
 
 "use strict";
+const fs = require('fs');
+const readline = require('readline');
 const randomBytes = require("crypto").randomBytes;
 
 class RawFileStorage {
-  constructor(filePath) {
-    this.store = {};
-    // TODO: Read file and store data.
+  constructor(options) {
+    options = options || {};
+    this.store = options.raw_data || {};
+
+    if(options.filePath) {
+      const fileStream = fs.createReadStream(options.filePath)
+      const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity
+      });
+
+      let is_reading_short_url = true;
+      let short_url = "";
+      rl.on('line', (line) => {
+        if(is_reading_short_url) {
+          short_url = line;
+          is_reading_short_url = false;
+        } else {
+          this.store[short_url] = line;
+          is_reading_short_url = true;
+        }
+      });
+    }
   }
 
   static generateShortUrl(byte_length) {
