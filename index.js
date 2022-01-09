@@ -1,10 +1,12 @@
+"use strict";
+
 const Koa = require("koa");
 const KoaBody = require("koa-body");
 const URL = require("url").URL;
+const config = require("config");
 
-// TODO: use config file.
-const Storage = require("./storage/raw-file");
-const storage = new Storage("./url-shortener.txt");
+const Storage = require("./storage/" + config.get("storage.module"));
+const storage = new Storage(config.get("storage.options"));
 
 const app = new Koa();
 app.use(
@@ -25,12 +27,18 @@ async function CreateShortURL(ctx) {
   origin_url = new URL(origin_url);
 
   let short_url = ctx.short_url;
-  // TODO: use config instead of magic number.
-  if (short_url.length < 8) {
+  if (
+    short_url.length < config.get("short_url.predefined_min_size") ||
+    short_url.length > config.get("short_url.predefined_max_size")
+  ) {
     short_url = null;
   }
+  let short_url_size = config.get("short_url.random_size");
 
-  short_url = await storage.create(origin_url.toString(), { short_url });
+  short_url = await storage.create(origin_url.toString(), {
+    short_url,
+    short_url_size,
+  });
   ctx.body = ctx.origin + "/" + short_url;
 }
 
@@ -90,4 +98,8 @@ app.use(async (ctx) => {
   }
 });
 
-app.listen(3000);
+if (config.has("service.host")) {
+  app.listen(config.get("service.port"), config.get("service.host"));
+} else {
+  app.listen(config.get("service.port"));
+}
