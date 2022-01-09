@@ -24,7 +24,13 @@ async function CreateShortURL(ctx) {
   // Check URL.
   origin_url = new URL(origin_url);
 
-  let short_url = await storage.create(origin_url.toString());
+  let short_url = ctx.url.slice(1);
+  // TODO: use config instead of magic number.
+  if (short_url.length < 8) {
+    short_url = null;
+  }
+
+  let short_url = await storage.create(origin_url.toString(), { short_url });
   ctx.body = ctx.origin + "/" + short_url;
 }
 
@@ -39,11 +45,17 @@ async function GetShortURL(ctx) {
 }
 
 async function ModifyShortURL(ctx) {
-  let origin_url = ctx.request.body.url || ctx.header.url;
-  let short_url = ctx.request.body.short_url || ctx.header.short_url;
+  let short_url = ctx.url.slice(1);
+  if (short_url.legnth < 1) {
+    // silently ignore.
+    ctx.status = 204;
+    return;
+  }
 
   // Check URL.
+  let origin_url = ctx.request.body.url || ctx.header.url;
   origin_url = new URL(origin_url);
+
   let result = await storage.modify(short_url, origin_url.toString());
 
   ctx.body = "Modified";
