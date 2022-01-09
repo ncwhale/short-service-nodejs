@@ -9,6 +9,7 @@
   "author": "whale mo",
   "license": "MIT",
   "dependencies": {
+    "config": "^3.3.6",
     "koa": "^2.13.4",
     "koa-body": "^4.2.0"
   }
