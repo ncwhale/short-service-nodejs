@@ -7,8 +7,18 @@ const KoaRouter = require("@koa/router");
 const URL = require("url").URL;
 
 const storage = require("../storage");
+const auth = require("../auth");
+
 const app = new Koa();
 const router = new KoaRouter();
+const bodyParser = KoaBody({
+  multipart: false,
+  urlencoded: true,
+  json: true,
+  text: true,
+  encoding: "utf8",
+  parsedMethods: ["POST", "PUT", "PATCH"],
+});
 
 async function CreateShortURL(ctx) {
   // URL param can from form data or http header.
@@ -16,7 +26,7 @@ async function CreateShortURL(ctx) {
   // Check URL.
   origin_url = new URL(origin_url);
 
-  let short_url = ctx.short_url;
+  let short_url = ctx.params.short_url;
   if (
     short_url.length < config.get("short_url.predefined_min_size") ||
     short_url.length > config.get("short_url.predefined_max_size")
@@ -36,7 +46,7 @@ async function CreateShortURL(ctx) {
 }
 
 async function GetShortURL(ctx) {
-  let origin_url = await storage.get(ctx.short_url);
+  let origin_url = await storage.get(ctx.params.short_url);
   if (origin_url) {
     ctx.redirect(origin_url);
     ctx.body = { origin_url };
@@ -46,23 +56,17 @@ async function GetShortURL(ctx) {
 }
 
 async function ModifyShortURL(ctx) {
-  if (ctx.short_url.legnth < 1) {
-    // silently ignore.
-    ctx.status = 204;
-    return;
-  }
-
   // Check URL.
   let origin_url = ctx.request.body.url || ctx.header.url;
   origin_url = new URL(origin_url);
 
-  let result = await storage.modify(ctx.short_url, origin_url.toString());
+  let result = await storage.modify(ctx.params.short_url, origin_url.toString());
 
   ctx.body = "Modified";
 }
 
 async function DeleteShortURL(ctx) {
-  let result = await storage.delete(ctx.short_url);
+  let result = await storage.delete(ctx.params.short_url);
   ctx.body = "Deleted";
 }
 
@@ -79,11 +83,13 @@ app.use(async (ctx, next) => {
 });
 
 router.get("/:short_url", GetShortURL);
-router.post("/", KoaBody(), CreateShortURL);
-router.put("/:short_url", KoaBody(), CreateShortURL);
-router.patch("/:short_url", KoaBody(), ModifyShortURL);
-router.delete("/:short_url", DeleteShortURL);
+router.post("/", auth.check, bodyParser, CreateShortURL);
+router.put("/:short_url", auth.check, bodyParser, CreateShortURL);
+router.patch("/:short_url", auth.strict, bodyParser, ModifyShortURL);
+router.delete("/:short_url", auth.strict, DeleteShortURL);
 
-app.use(router.routes());
+app
+  .use(router.routes())
+  .use(router.allowedMethods());
 
 module.exports = app;
