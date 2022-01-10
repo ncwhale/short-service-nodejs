@@ -1,3 +1,5 @@
+"use strict";
+
 const crypto = require("crypto");
 
 function sign(payoad, presharedkey) {
@@ -15,14 +17,18 @@ class PresharedKeyVerify {
     this.presharedkey = options.presharedkey;
   }
 
-  init(){}
+  init(){
+    // bind middleware to context
+    this.check = this.check.bind(this);
+    this.strict = this.strict.bind(this);
+  }
 
   async check(ctx, next) {
     const signature = ctx.request.header["x-signature"] || ctx.query.signature;
     const payload = `${ctx.method} : ${ctx.params.short_url || ""} @ ${ctx.header['user-agent']}`;
     console.log(payload);
     console.log(signature);
-    console.log(sign(payload, presharedkey));
+    console.log(sign(payload, this.presharedkey));
 
     if (signature) {
       ctx.verified = verify(payload, signature, this.presharedkey);
@@ -34,7 +40,7 @@ class PresharedKeyVerify {
   };
 
   async strict(ctx, next) {
-    this.check(ctx, () => { });
+    await this.check(ctx, () => { });
     if (ctx.verified) {
       await next();
     } else {
