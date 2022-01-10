@@ -11,7 +11,7 @@ module.exports = {
   },
   auth: {
     // auth module.
-    preshared_key: null,
+    presharedkey: null,
   },
   service: {
     port: 3000,
