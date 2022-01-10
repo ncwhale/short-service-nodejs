@@ -9,7 +9,10 @@ module.exports = {
     },
   },
   auth: {
-    presharedkey: "salted-test-pre-shared-key",
+    module: "presharedkey",
+    options: {
+      presharedkey: "salted-test-pre-shared-key",
+    }
   },
   service: {
     port: 53030,

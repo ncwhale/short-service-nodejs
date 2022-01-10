@@ -10,8 +10,8 @@ module.exports = {
     random_size: 8,
   },
   auth: {
-    // auth module.
-    presharedkey: null,
+    module: "dummy",
+    options: {}
   },
   service: {
     port: 3000,
