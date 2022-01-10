@@ -8,16 +8,8 @@ const URL = require("url").URL;
 
 const storage = require("../storage");
 const app = new Koa();
-app.use(
-  KoaBody({
-    multipart: false,
-    urlencoded: true,
-    json: true,
-    text: true,
-    encoding: "utf8",
-    parsedMethods: ["POST", "PUT", "PATCH"],
-  })
-);
+const router = new KoaRouter();
+
 async function CreateShortURL(ctx) {
   // URL param can from form data or http header.
   let origin_url = ctx.request.body.url || ctx.header.url;
@@ -74,29 +66,24 @@ async function DeleteShortURL(ctx) {
   ctx.body = "Deleted";
 }
 
-const method = {
-  GET: GetShortURL,
-  PUT: CreateShortURL,
-  POST: CreateShortURL,
-  PATCH: ModifyShortURL,
-  DELETE: DeleteShortURL,
-};
-
-app.use(async (ctx) => {
-  if (ctx.method in method)
-    try {
-      // Every method need this param.
-      ctx.short_url = ctx.url.slice(1);
-      await method[ctx.method](ctx);
-    } catch (e) {
-      // TODO: handle error.
-      console.error(e);
-      // silently ignore.
-      ctx.status = 204;
-    }
-  else {
+// Error handler.
+app.use(async (ctx, next) => {
+  try {
+    await next();
+  } catch (e) {
+    // TODO: handle error.
+    console.error(e);
+    // silently ignore.
     ctx.status = 204;
   }
 });
+
+router.get("/:short_url", GetShortURL);
+router.post("/", KoaBody(), CreateShortURL);
+router.put("/:short_url", KoaBody(), CreateShortURL);
+router.patch("/:short_url", KoaBody(), ModifyShortURL);
+router.delete("/:short_url", DeleteShortURL);
+
+app.use(router.routes());
 
 module.exports = app;
