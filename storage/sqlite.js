@@ -97,8 +97,8 @@ class SqliteStorage {
   }
 
   async get(short_url) {
-    let result = await this.get_origin_url_stmt.get({ $short_url: short_url });
-    return result.origin_url;
+    const result = await this.get_origin_url_stmt.get({ $short_url: short_url });
+    return result ? result.origin_url : undefined;
   }
 
   async modify(short_url, origin_url) {
