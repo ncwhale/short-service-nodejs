@@ -4,7 +4,9 @@
 3. Link all http method to data storage insterface.
 4. Add config file for shorten url. <- DB config depends on this.
 5. Link database to project.
-
-# DOING
 6. Add authorization.
 7. Setup authorization usage.
+
+# DOING
+8. Add entry page.
+9. Add tests.
