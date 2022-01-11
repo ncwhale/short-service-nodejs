@@ -1,9 +1,9 @@
 const assert = require("assert");
 const config = require("config");
-const Storage = require("../storage/" + config.get("storage.module"));
 
 describe("Storage", function () {
   describe("test config", function () {
+    const Storage = require("../storage/" + config.get("storage.module"));
     var storage = null;
 
     beforeEach(async function () {
