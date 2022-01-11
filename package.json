@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "test:watch": "mocha --watch --watch-files test -R min"
+    "test:watch": "mocha --watch --watch-files test --reporter min"
   },
   "author": "whale mo",
   "license": "MIT",
