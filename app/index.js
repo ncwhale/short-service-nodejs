@@ -26,7 +26,7 @@ async function CreateShortURL(ctx) {
   // Check URL.
   origin_url = new URL(origin_url);
 
-  let short_url = ctx.params.short_url;
+  let short_url = ctx.params.short_url || "";
   if (
     short_url.length < config.get("short_url.predefined_min_size") ||
     short_url.length > config.get("short_url.predefined_max_size")
