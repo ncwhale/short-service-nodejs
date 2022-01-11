@@ -13,6 +13,9 @@ module.exports = {
     module: "dummy",
     options: {}
   },
+  admin: {
+    enabled: false,
+  },
   service: {
     port: 3000,
     host: "localhost",
