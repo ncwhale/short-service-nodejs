@@ -11,6 +11,8 @@ module.exports = {
     // predefined short URL size limit.
     predefined_min_size: 8,
     predefined_max_size: 128,
+
+    // random short URL size limit.
     random_size: 8,
 
     // create/modify/delete rate limit.
