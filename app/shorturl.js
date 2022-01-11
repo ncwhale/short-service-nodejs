@@ -24,6 +24,11 @@ async function CreateShortURL(ctx) {
   // Check URL.
   origin_url = new URL(origin_url);
 
+  // Disable same origin origin_url.
+  if (origin_url.origin === ctx.origin) {
+    return ctx.throw(400, "Same origin origin_url is not allowed.");
+  }
+
   let short_url = ctx.params.short_url || "";
   if (
     short_url.length < config.get("short_url.predefined_min_size") ||
