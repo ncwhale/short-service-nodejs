@@ -12,9 +12,16 @@ function verify(payload, signature, presharedkey) {
   return sign(payload, presharedkey) === signature;
 }
 
+function verifyTimestamp(timestamp, timestamp_error_limit) {
+  const now = new Date().getTime();
+  const diff = Math.abs(now - parseFloat(timestamp));
+  return diff < timestamp_error_limit;
+}
+
 class PresharedKeyVerify {
   constructor(options) {
-    this.presharedkey = options.presharedkey;
+    this.presharedkey = options.presharedkey || crypto.randomBytes(32).toString("base64url");
+    this.timestamp_error_limit = options.timestamp_error_limit || 1000 * 60 * 5; // 5 minutes
   }
 
   init(){
@@ -24,17 +31,22 @@ class PresharedKeyVerify {
   }
 
   async check(ctx, next) {
-    const signature = ctx.request.header["x-signature"] || ctx.query.signature;
-    const payload = `${ctx.method} : ${ctx.params.short_url || ""} @ ${ctx.header['user-agent']}`;
-    console.log(payload);
-    console.log(signature);
-    console.log(sign(payload, this.presharedkey));
-
-    if (signature) {
-      ctx.verified = verify(payload, signature, this.presharedkey);
-    } else {
-      ctx.verified = false;
+    // Skip multiple verification
+    if ("verified" in ctx) {
+      return next();
     }
+
+    const signature = ctx.request.header["x-signature"] || ctx.query.signature;
+    const timestamp = ctx.request.header["x-timestamp"] || ctx.query.timestamp;
+
+    if (!signature || !timestamp || !verifyTimestamp(timestamp, this.timestamp_error_limit)) {
+      ctx.verified = false;
+      return next();
+    }
+
+    const payload = `${ctx.method} ${ctx.params.short_url || ""}\n${ctx.header['user-agent']}\n${ctx.header['x-forwarded-for'] || ctx.ip}\n${timestamp}`;
+    console.dir({ payload, signature, presharedkey: this.presharedkey, sign: sign(payload, this.presharedkey) });
+    ctx.verified = verify(payload, signature, this.presharedkey);
 
     return next();
   };
