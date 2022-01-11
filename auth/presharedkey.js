@@ -44,7 +44,7 @@ class PresharedKeyVerify {
       return next();
     }
 
-    const payload = `${ctx.method} ${ctx.params.short_url || ""}\n${ctx.header['user-agent']}\n${ctx.header['x-forwarded-for'] || ctx.ip}\n${timestamp}`;
+    const payload = `${ctx.method} ${ctx.params.short_url || ""}\n${ctx.header['user-agent']}\n${ctx.ip}\n${timestamp}`;
     console.dir({ payload, signature, presharedkey: this.presharedkey, sign: sign(payload, this.presharedkey) });
     ctx.verified = verify(payload, signature, this.presharedkey);
 
