@@ -38,7 +38,7 @@ class SqliteStorage {
     const sqlite3 = require("sqlite3").verbose();
     let db = (this.db = await sqlite.open({
       filename: this.options.db_path,
-      driver: sqlite3.Database,
+      driver: sqlite3.cached.Database,
     }));
 
     // Create table if not exists.
