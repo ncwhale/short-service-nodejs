@@ -3,6 +3,7 @@
 const config = require("config");
 const KoaBody = require("koa-body");
 const KoaRouter = require("@koa/router");
+const RateLimit = require("koa-ratelimit");
 const URL = require("url").URL;
 
 const storage = require("../storage");
@@ -16,6 +17,28 @@ const bodyParser = KoaBody({
   text: true,
   encoding: "utf8",
   parsedMethods: ["POST", "PUT", "PATCH"],
+});
+
+const db = new Map();
+const ratelimit = RateLimit({
+  driver: "memory",
+  db: db,
+  duration: config.get("short_url.operation_rate_limit.duration"),
+  max: config.get("short_url.operation_rate_limit.max"),
+  errorMessage: "Request rate limit exceeded.",
+  id: (ctx) => ctx.ip,
+  headers: {
+    remaining: "Rate-Limit-Remaining",
+    reset: "Rate-Limit-Reset",
+    total: "Rate-Limit-Total",
+  },
+  disableHeader: true,
+  // whitelist: (ctx) => {
+  //   // some logic that returns a boolean
+  // },
+  // blacklist: (ctx) => {
+  //   // some logic that returns a boolean
+  // },
 });
 
 async function CreateShortURL(ctx) {
@@ -63,13 +86,13 @@ async function ModifyShortURL(ctx) {
   let origin_url = ctx.request.body.url || ctx.header.url;
   origin_url = new URL(origin_url);
 
-  let result = await storage.modify(ctx.params.short_url, origin_url.toString());
+  await storage.modify(ctx.params.short_url, origin_url.toString());
 
   ctx.body = "Modified";
 }
 
 async function DeleteShortURL(ctx) {
-  let result = await storage.delete(ctx.params.short_url);
+  await storage.delete(ctx.params.short_url);
   ctx.body = "Deleted";
 }
 
@@ -86,9 +109,15 @@ router.use(async (ctx, next) => {
 });
 
 router.get("/:short_url", GetShortURL);
-router.post("/", auth.check, bodyParser, CreateShortURL);
-router.put("/:short_url", auth.check, bodyParser, CreateShortURL);
-router.patch("/:short_url", auth.strict, bodyParser, ModifyShortURL);
-router.delete("/:short_url", auth.strict, DeleteShortURL);
+router.post("/", ratelimit, auth.check, bodyParser, CreateShortURL);
+router.put(
+  "/:short_url",
+  ratelimit,
+  config.get("short_url.predefined_url_strict") ? auth.strict : auth.check,
+  bodyParser,
+  CreateShortURL
+);
+router.patch("/:short_url", ratelimit, auth.strict, bodyParser, ModifyShortURL);
+router.delete("/:short_url", ratelimit, auth.strict, DeleteShortURL);
 
 module.exports = router;
