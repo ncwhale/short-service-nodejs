@@ -16,5 +16,8 @@
     "koa-ratelimit": "^5.0.1",
     "sqlite": "^4.0.23",
     "sqlite3": "^4.2.0"
+  },
+  "devDependencies": {
+    "mocha": "^9.1.3"
   }
 }
