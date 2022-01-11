@@ -45,6 +45,11 @@ describe("Storage", function () {
           short_url: "test-short-url",
         }
       );
+
+      const result_new = storage.create(
+        "https://new.test.org/abcdef?a=1&b=2&c=3#test-hash-tag"
+      );
+      
       assert.equal(result.short_url, "test-short-url");
       assert.equal(
         result.origin_url,
@@ -55,6 +60,8 @@ describe("Storage", function () {
         storage.get("test-short-url"),
         "https://test.org/abcdef?a=1&b=2&c=3#test-hash-tag"
       );
+
+      assert.equal(storage.get(result_new.short_url), result_new.origin_url);
     });
 
     it("should not create duplicated url", function () {
