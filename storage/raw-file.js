@@ -6,33 +6,13 @@
 
 "use strict";
 const fs = require("fs");
-const readline = require("readline");
+const readline = require('readline/promises');
 const randomBytes = require("crypto").randomBytes;
 
 class RawFileStorage {
   constructor(options) {
-    options = options || {};
-    this.store = options.raw_data || {};
-
-    if (options.filePath) {
-      const fileStream = fs.createReadStream(options.filePath);
-      const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity,
-      });
-
-      let is_reading_short_url = true;
-      let short_url = "";
-      rl.on("line", (line) => {
-        if (is_reading_short_url) {
-          short_url = line;
-          is_reading_short_url = false;
-        } else {
-          this.store[short_url] = line;
-          is_reading_short_url = true;
-        }
-      });
-    }
+    this.options = options || {};
+    this.store = this.options.raw_data || {};
   }
 
   static generateShortUrl(byte_length) {
@@ -40,7 +20,27 @@ class RawFileStorage {
     return buf.toString("base64url");
   }
 
-  init() {}
+  async init() {
+    if (this.options.filePath) {
+      const fileStream = fs.createReadStream(this.options.filePath);
+      const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity,
+      });
+
+      let is_reading_short_url = true;
+      let short_url = "";
+      for await (const line of rl) {
+        if (is_reading_short_url) {
+          short_url = line;
+          is_reading_short_url = false;
+        } else {
+          this.store[short_url] = line;
+          is_reading_short_url = true;
+        }
+      }
+    }
+  }
 
   create(origin_url, params) {
     // Generate a shorten URL.
