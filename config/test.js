@@ -30,7 +30,7 @@ module.exports = {
   },
   service: {
     proxy: true,
-    port: 53030,
+    port: 0,
     host: "localhost",
   }
 }
