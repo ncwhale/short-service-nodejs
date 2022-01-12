@@ -44,6 +44,20 @@ describe("Server", function () {
       expect(result_get_json.origin_url).to.equal(origin_url);
     });
 
+    it("Should not create a short url when url is incorrect", async function () {
+      const result = await fetch(service_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: "This is not a url",
+        }),
+      });
+
+      expect(result.status).to.equal(204);
+    });
+
     it("Should allow predefined short URL", async function () {
       const predefined_url = "test-predefined-url";
       const origin_url = "https://predefined.test.org/A?a=1&b=2&c=3#-hash-tag";
@@ -145,7 +159,7 @@ describe("Server", function () {
       expect(json.origin_url).to.equal(origin_url);
 
       // Try to modify the short url without auth
-      const result_modify =await fetch(json.short_url, {
+      const result_modify = await fetch(json.short_url, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
