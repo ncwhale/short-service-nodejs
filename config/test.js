@@ -20,7 +20,7 @@ module.exports = {
     },
   },
   auth: {
-    module: "presharedkey",
+    module: "dummy",
     options: {
       presharedkey: "salted-test-pre-shared-key",
     }
