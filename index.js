@@ -10,8 +10,11 @@ if(config.util.getEnv("NODE_ENV") === "development") {
   console.dir(config);
 }
 
+let server = null;
 if (config.has("service.host")) {
-  app.listen(config.get("service.port"), config.get("service.host"));
+  server = app.listen(config.get("service.port"), config.get("service.host"));
 } else {
-  app.listen(config.get("service.port"));
+  server = app.listen(config.get("service.port"));
 }
+
+module.exports = server;
