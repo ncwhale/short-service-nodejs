@@ -102,7 +102,9 @@ router.use(async (ctx, next) => {
     await next();
   } catch (e) {
     // TODO: handle error.
-    console.error(e);
+    if (config.util.getEnv("NODE_ENV") === "development") {
+      console.error(e);
+    }
     // silently ignore.
     ctx.status = 204;
   }
