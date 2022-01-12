@@ -1,5 +1,6 @@
 import { expect, assert, should } from "chai";
 import fetch from "node-fetch";
+import config from "config";
 
 import server from "../index.js";
 const service_url = `http://localhost:${server.address().port}`;
@@ -52,7 +53,7 @@ describe("Server", function () {
         headers: {
           "Content-Type": "application/json",
           "x-timestamp": timestamp,
-          "x-signature": "test-signature",
+          "x-signature": config.get("auth.options.presharedkey"),
         },
         body: JSON.stringify({
           url: origin_url,
