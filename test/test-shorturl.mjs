@@ -44,7 +44,7 @@ describe("Server", function () {
       expect(result_get_json.origin_url).to.equal(origin_url);
     });
 
-    it("Should allow predefined short URL",async function () {
+    it("Should allow predefined short URL", async function () {
       const predefined_url = "test-predefined-url";
       const origin_url = "https://predefined.test.org/A?a=1&b=2&c=3#-hash-tag";
       const timestamp = new Date().getTime();
@@ -76,9 +76,54 @@ describe("Server", function () {
       expect(result_get.headers.get("Location")).be.equal(origin_url);
       const result_get_json = await result_get.json();
       expect(result_get_json.origin_url).to.equal(origin_url);
+
+      const modified_url = "https://modify.test.org/B?a=1&b=2&c=3#-hash-tag";
+      const result_modify = await fetch(json.short_url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-timestamp": timestamp,
+          "x-signature": config.get("auth.options.presharedkey"),
+        },
+        body: JSON.stringify({
+          url: modified_url,
+        }),
+      });
+
+      expect(result_modify.status).to.equal(200);
+      expect(result_modify.headers.get("content-type")).includes("text/plain");
+
+      const result_get_modified = await fetch(json.short_url, {
+        method: "GET",
+        redirect: "manual",
+        follow: 0,
+      });
+
+      expect(result_get_modified.status).to.be.within(300, 400);
+      expect(result_get_modified.headers.get("Location")).be.equal(modified_url);
+      const result_get_modified_json = await result_get_modified.json();
+      expect(result_get_modified_json.origin_url).to.equal(modified_url);
     });
 
-    it("Should not service without auth", function () {});
+    it("Should not service without auth", function () {
+      const origin_url = "https://noauth.test.org/abcdef?a=1&b=2&c=3#test-hash-tag";
+      const result = fetch(service_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: origin_url,
+        }),
+      });
+      
+      expect(result.status).to.equal(200);
+      expect(result.headers.get("content-type")).includes("application/json");
+      const json = await result.json();
+      expect(json.short_url).to.exist;
+      expect(json.origin_url).to.equal(origin_url);
+
+    });
   });
 
   describe("Admin service", function () {});
