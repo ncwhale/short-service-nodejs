@@ -100,14 +100,17 @@ describe("Server", function () {
       });
 
       expect(result_get_modified.status).to.be.within(300, 400);
-      expect(result_get_modified.headers.get("Location")).be.equal(modified_url);
+      expect(result_get_modified.headers.get("Location")).be.equal(
+        modified_url
+      );
       const result_get_modified_json = await result_get_modified.json();
       expect(result_get_modified_json.origin_url).to.equal(modified_url);
     });
 
-    it("Should not service without auth", function () {
-      const origin_url = "https://noauth.test.org/abcdef?a=1&b=2&c=3#test-hash-tag";
-      const result = fetch(service_url, {
+    it("Should not service without auth", async function () {
+      const origin_url =
+        "https://noauth.test.org/abcdef?a=1&b=2&c=3#test-hash-tag";
+      const result = await fetch(service_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,13 +119,36 @@ describe("Server", function () {
           url: origin_url,
         }),
       });
-      
+
       expect(result.status).to.equal(200);
       expect(result.headers.get("content-type")).includes("application/json");
       const json = await result.json();
       expect(json.short_url).to.exist;
       expect(json.origin_url).to.equal(origin_url);
 
+      // Try to modify the short url without auth
+      const result_modify =await fetch(json.short_url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: "https://modify.test.org/B?a=1&b=2&c=3#-hash-tag",
+        }),
+      });
+
+      expect(result_modify.status).to.equal(204);
+
+      const result_get = await fetch(json.short_url, {
+        method: "GET",
+        redirect: "manual",
+        follow: 0,
+      });
+
+      expect(result_get.status).to.be.within(300, 400);
+      expect(result_get.headers.get("Location")).be.equal(origin_url);
+      const result_get_json = await result_get.json();
+      expect(result_get_json.origin_url).to.equal(origin_url);
     });
   });
 
