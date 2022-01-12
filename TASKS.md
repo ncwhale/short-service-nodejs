@@ -6,7 +6,9 @@
 5. Link database to project.
 6. Add authorization.
 7. Setup authorization usage.
+8. Add tests.
 
 # DOING
-8. Add entry page.
-9. Add tests.
+1. Add entry page.
+2. Add admin service.
+3. Add admin page.
