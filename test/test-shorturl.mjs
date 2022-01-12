@@ -105,6 +105,24 @@ describe("Server", function () {
       );
       const result_get_modified_json = await result_get_modified.json();
       expect(result_get_modified_json.origin_url).to.equal(modified_url);
+
+      const result_delete = await fetch(json.short_url, {
+        method: "DELETE",
+        headers: {
+          "x-timestamp": timestamp,
+          "x-signature": config.get("auth.options.presharedkey"),
+        },
+      });
+
+      expect(result_delete.status).to.equal(200);
+
+      const result_get_deleted = await fetch(json.short_url, {
+        method: "GET",
+        redirect: "manual",
+        follow: 0,
+      });
+
+      expect(result_get_deleted.status).to.be.equal(204);
     });
 
     it("Should not service without auth", async function () {
@@ -138,6 +156,13 @@ describe("Server", function () {
       });
 
       expect(result_modify.status).to.equal(204);
+
+      // Try to delete the short url without auth
+      const result_delete = await fetch(json.short_url, {
+        method: "DELETE",
+      });
+
+      expect(result_delete.status).to.equal(204);
 
       const result_get = await fetch(json.short_url, {
         method: "GET",
